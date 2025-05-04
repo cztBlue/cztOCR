@@ -3,7 +3,7 @@
 ---
 
 ## 简介
-启发于天若OCR开发出的 cztOCR,这是一款基于 WPF 的桌面工具，可自动或手动加载图片，调用百度 OCR API 识别文字，支持通过 DeepSeek AI 校对识别结果。
+启发于天若OCR开发出的 cztOCR,这是一款基于 WPF 的超轻量桌面工具，可自动监控剪贴板或手动加载图片，调用百度 OCR API 识别文字，支持自定义prompt通过 DeepSeek AI 校对识别结果。
 
 ---
 
@@ -30,8 +30,8 @@
    在releases中下载zip文件,解压即用.
 
 2. **配置 API Key**
-   * 自行查阅如何申请百度OCR API(每月1000次免费的OCR调用,不黑的说百度的效果算是国内最好的)
-   * 自行查阅配置deepseek的api(deepseek)
+   * 自行查阅如何申请百度OCR API(每月1000次免费的OCR调用,百度的效果算是国内最好的)
+   * 自行查阅配置deepseek的api(deepseek价格是最低廉的)
    * 启动软件 → 菜单 “设置” → 填入 百度 Key/Secret 与 DeepSeek Key → 保存。
 
 3. **使用**
@@ -42,18 +42,8 @@
 
 ---
 ## 示例使用
+![演示图](images/eg1.png)
 
-
-## 搜索关键词
-
-```
-WPF OCR 工具
-百度 OCR DeepSeek
-Clipboard OCR WPF
-图像文字识别 校对
-开源 OCR 桌面
-DeepSeek 校对 OCR 
-```
 
 ---
 
@@ -61,5 +51,5 @@ DeepSeek 校对 OCR
 本项目采用 [MIT License](LICENSE) 开源，欢迎 Fork、Issue 和 PR。
 
 ## 其他
-如果这个项目帮到你,能给个⭐的话我会感激不尽||ヽ(*￣▽￣*)ノミ|Ю
+如果这个项目帮到你,能给个⭐的话我会感激不尽||ヽ(*￣▽￣*)ノミ|Ю  
 虽然是WPF写的,但是主要是自用而且写的比较急,所以界面看起来有点原始,如果后续反响好的话就把UI写的好看点(吐舌)

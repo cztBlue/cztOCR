@@ -10,6 +10,8 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -208,29 +210,35 @@ namespace cztOCR
         // AI校对
         private async void CheckApi_Click(object sender, RoutedEventArgs e)
         {
-            string apiKey = ConfigData.Instance.DsApiKey;  
-            string apiUrl = "https://api.deepseek.com/chat/completions";
-            string userInput = OcrTextBox.Text;
-
-            if (string.IsNullOrWhiteSpace(userInput))
-            {
-                MessageBox.Show("识别结果为空，无法进行 AI 校对。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var requestBody = new
-            {
-                model = "deepseek-chat",
-                messages = new[]
-                {
-                    new { role = "system", content = PromptTextBox.Text },
-                    new { role = "user", content = userInput }
-                },
-                stream = false
-            };
+            Button checkButton = sender as Button;
+            checkButton.IsEnabled = false;
+            string originalContent = checkButton.Content.ToString();
+            checkButton.Content = "正在校对...";
+            //Mouse.OverrideCursor = Cursors.Wait;
 
             try
             {
+                string apiKey = ConfigData.Instance.DsApiKey;
+                string apiUrl = "https://api.deepseek.com/chat/completions";
+                string userInput = OcrTextBox.Text;
+
+                if (string.IsNullOrWhiteSpace(userInput))
+                {
+                    MessageBox.Show("识别结果为空，无法进行 AI 校对。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var requestBody = new
+                {
+                    model = "deepseek-chat",
+                    messages = new[]
+                    {
+                new { role = "system", content = PromptTextBox.Text + " 只要给我校对好的内容，其他多余的不要给我。" },
+                new { role = "user", content = userInput }
+            },
+                    stream = false
+                };
+
                 var client = new HttpClient();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
@@ -242,19 +250,25 @@ namespace cztOCR
 
                 string responseString = await response.Content.ReadAsStringAsync();
 
-                // 解析 response JSON
                 dynamic result = JsonConvert.DeserializeObject(responseString);
                 string corrected = result.choices[0].message.content;
 
                 OcrTextBox.Text = corrected.Trim();
                 SaveResult();
-                //MessageBox.Show("AI 校对完成", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"AI 校对失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                // 恢复界面状态
+                checkButton.IsEnabled = true;
+                checkButton.Content = originalContent;
+                Mouse.OverrideCursor = null;
+            }
         }
+
 
         // 退出应用程序
         private void Exit_Click(object sender, RoutedEventArgs e)

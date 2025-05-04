@@ -19,7 +19,6 @@
             <ColumnDefinition Width="*" MinWidth="200" />
         </Grid.ColumnDefinitions>
 
-        <!--  统一设置所有标签样式  -->
         <Grid.Resources>
             <Style TargetType="TextBlock">
                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -36,7 +35,6 @@
                 <Setter Property="Padding" Value="5" />
             </Style>
 
-            <!--  原生按钮样式定义  -->
             <Style x:Key="StandardButton" TargetType="Button">
                 <Setter Property="Width" Value="90" />
                 <Setter Property="Height" Value="28" />
@@ -74,7 +72,6 @@
             Grid.Row="2"
             Grid.Column="1" />
 
-        <!--  OCR 语言选择  -->
         <TextBlock
             Grid.Row="3"
             Grid.Column="0"
@@ -84,14 +81,15 @@
             Grid.Row="3"
             Grid.Column="1"
             SelectedIndex="0">
+            <ComboBoxItem Content="auto_detect" />
             <ComboBoxItem Content="CHN_ENG" />
             <ComboBoxItem Content="ENG" />
-            <ComboBoxItem Content="POR" />
-            <ComboBoxItem Content="FRE" />
             <ComboBoxItem Content="JAP" />
+            <ComboBoxItem Content="RUS" />
+            <ComboBoxItem Content="KOR" />
+            <ComboBoxItem Content="VIE" />
         </ComboBox>
 
-        <!--  底部按钮（使用传统Margin实现间距）  -->
         <StackPanel
             Grid.Row="4"
             Grid.ColumnSpan="2"
@@ -99,12 +97,12 @@
             HorizontalAlignment="Right"
             Orientation="Horizontal">
             <Button
-                Click="Cancel_Click"
-                Content="取消"
-                Style="{StaticResource StandardButton}" />
-            <Button
                 Click="Save_Click"
                 Content="保存"
+                Style="{StaticResource StandardButton}" />
+            <Button
+                Click="Cancel_Click"
+                Content="取消"
                 Style="{StaticResource StandardButton}" />
         </StackPanel>
     </Grid>

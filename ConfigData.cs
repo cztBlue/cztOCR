@@ -1,11 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace cztOCR
 {
@@ -51,7 +47,7 @@ namespace cztOCR
             set { if (_ocrLanguage != value) { _ocrLanguage = value; OnPropertyChanged(nameof(OcrLanguage)); } }
         }
 
-        private string _prompt = "";
+        private string _prompt = "我会给你一些由OCR识别的文本，请你根据文本的语义上下文来校对这些文本。";
         public string Prompt
         {
             get => _prompt;
