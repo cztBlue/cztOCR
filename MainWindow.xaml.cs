@@ -3,17 +3,16 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 
 
@@ -28,6 +27,9 @@ namespace cztOCR
         private ClipboardImageMonitor clip_monitor;
         MemoryStream ms_current_image;
         private readonly Ocr client;
+        private bool _isExiting;
+        private bool _isPressX;
+
 
         public MainWindow()
         {
@@ -41,9 +43,11 @@ namespace cztOCR
             {
                 Timeout = 60000 // 设置超时时间
             };
-            var hash  = CurrentImageStream.Instance.GetImageHash(); //懒加载，触发一下刷出图片
-            
+            var hash = CurrentImageStream.Instance.GetImageHash(); //懒加载，触发一下刷出图片
 
+            this.StateChanged += MainWindow_StateChanged;
+            this.Closed += (sender, e) => ConfigData.Instance.Save();
+            this.DataContext = ConfigData.Instance;
         }
 
         // 打开图片文件
@@ -75,7 +79,8 @@ namespace cztOCR
         // 开始 OCR 识别
         private void StartOcr_Click(object sender, RoutedEventArgs e)
         {
-            
+            clip_monitor.newimagecome = false;
+
             if (CurrentImageStream.Instance.IsImageEmpty())
             {
                 OcrTextBox.Text = "提示: 请先选择一张图片";
@@ -95,7 +100,7 @@ namespace cztOCR
                 };
 
                 // 调用高精度识别接口
-                var result =  client.AccurateBasic(image, options);
+                var result = client.AccurateBasic(image, options);
 
                 if (result["words_result"] is Newtonsoft.Json.Linq.JArray wordsArray)
                 {
@@ -233,6 +238,7 @@ namespace cztOCR
                     model = "deepseek-chat",
                     messages = new[]
                     {
+                //new { role = "system", content = PromptTextBox.Text},
                 new { role = "system", content = PromptTextBox.Text + " 只要给我校对好的内容，其他多余的不要给我。" },
                 new { role = "user", content = userInput }
             },
@@ -302,7 +308,6 @@ namespace cztOCR
             ConfigData.Instance.Save();
         }
 
-
         // 打开历史页面
         private void OpenHistory_Click(object sender, RoutedEventArgs e)
         {
@@ -315,10 +320,7 @@ namespace cztOCR
 
         private void AutoLoadClipboard_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            bool isChecked = AutoLoadClipboardCheck.IsChecked ?? false;
-            Console.WriteLine($"自动载入剪贴板状态：{isChecked}");
-
-            if (isChecked)
+            if (ConfigData.Instance.IsDetected)
             {
                 clip_monitor.StartMonitor();
             }
@@ -327,10 +329,89 @@ namespace cztOCR
                 clip_monitor.StopMonitor();
             }
         }
-        
+
         private void LoadClipboard_Click(object sender, RoutedEventArgs e)
         {
-            clip_monitor.TryLoadClip(null,null);
+            clip_monitor.TryLoadClip(null, null);
+        }
+
+        //隐藏界面到托盘
+        private void MainWindow_StateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized && _isPressX)
+            {
+                Hide();
+                MyTrayIcon.Visibility = Visibility.Visible;
+                _isPressX = false;
+            }
+        }
+
+        private async void RestoreWindow_Click(object sender, RoutedEventArgs e)
+        {
+            Show();
+            WindowState = WindowState.Normal;
+            MyTrayIcon.Visibility = Visibility.Collapsed;
+            Activate();
+
+            // 异步执行OCR
+            if (clip_monitor.newimagecome && ConfigData.Instance.IsAutoOCR)
+            {
+                await Task.Run(() =>
+                {
+                    Dispatcher.Invoke(() => StartOcr_Click(null, null));
+                });
+            }
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (_isExiting == false)
+            {
+                e.Cancel = true;
+                _isPressX = true;
+                this.WindowState = WindowState.Minimized;
+            }
+            else
+            {
+                base.OnClosing(e);
+            }
+        }
+
+        private void ExitApplication_Click(object sender, RoutedEventArgs e)
+        {
+            _isExiting = true;
+            MyTrayIcon.Dispose();
+            Close();
+        }
+
+        public static void SetAutoStart(bool enable)
+        {
+            // 获取应用程序的可执行文件路径
+            string appPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+
+            // 打开注册表项
+            RegistryKey regKey = Registry.CurrentUser.OpenSubKey(
+                "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            // 应用名称（确保唯一）
+            string appName = "MyFloatingBallApp";
+
+            // 添加开机启动项
+            if (enable)
+            {
+
+                regKey.SetValue(appName, appPath);
+            }
+            else
+            {
+                // 移除开机启动项
+                if (regKey.GetValue(appName) != null)
+                {
+                    regKey.DeleteValue(appName);
+                }
+            }
+
+            regKey.Close();
         }
 
     }

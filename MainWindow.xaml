@@ -5,11 +5,30 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:cztOCR"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tb="http://www.hardcodet.net/taskbar"
     Title="cztOCR"
     Width="800"
     Height="600"
     mc:Ignorable="d">
+
+    <!--  在Window.Resources中定义托盘菜单  -->
+    <Window.Resources>
+        <ContextMenu x:Key="TrayMenu">
+            <MenuItem Click="RestoreWindow_Click" Header="打开" />
+            <Separator />
+            <MenuItem Click="ExitApplication_Click" Header="退出" />
+        </ContextMenu>
+    </Window.Resources>
+
+
+
     <DockPanel>
+        <tb:TaskbarIcon
+            x:Name="MyTrayIcon"
+            ContextMenu="{StaticResource TrayMenu}"
+            IconSource="appicon.ico"
+            ToolTipText="OCR程序"
+            TrayMouseDoubleClick="RestoreWindow_Click" />
         <!--  顶部菜单栏  -->
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="文件">
@@ -35,6 +54,8 @@
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="3*" />
             </Grid.ColumnDefinitions>
+            <!--  添加托盘图标控件  -->
+
 
             <!--  图片预览  -->
             <Border
@@ -109,7 +130,14 @@
                     VerticalAlignment="Center"
                     Checked="AutoLoadClipboard_CheckedChanged"
                     Content="自动载入剪贴板"
+                    IsChecked="{Binding IsDetected}"
                     Unchecked="AutoLoadClipboard_CheckedChanged" />
+                <CheckBox
+                    x:Name="AutoOCRWhenActivate"
+                    Margin="5,0"
+                    VerticalAlignment="Center"
+                    Content="激活时自动OCR"
+                    IsChecked="{Binding IsAutoOCR}" />
                 <Button
                     Width="100"
                     Margin="5,0"

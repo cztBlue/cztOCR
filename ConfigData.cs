@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 
 namespace cztOCR
@@ -45,13 +46,36 @@ namespace cztOCR
         {
             get => _ocrLanguage;
             set { if (_ocrLanguage != value) { _ocrLanguage = value; OnPropertyChanged(nameof(OcrLanguage)); } }
-        }
-
-        private string _prompt = "我会给你一些由OCR识别的文本，请你根据文本的语义上下文来校对这些文本。";
+        } 
+        private string _prompt = "";
         public string Prompt
         {
-            get => _prompt;
-            set { if (_prompt != value) { _prompt = value; OnPropertyChanged(nameof(Prompt)); } }
+            get { 
+                if (_prompt == null || _prompt == "")
+                    return "以下文本是OCR来的，请你帮我根据上下文帮我校对内容："; 
+                return _prompt;
+            }
+            set { 
+                if (_prompt != value) 
+                { 
+                    _prompt = value; 
+                    OnPropertyChanged(nameof(Prompt)); 
+                } 
+            }
+        }
+
+        private bool _isdetected = false;
+        public bool IsDetected
+        {
+            get => _isdetected;
+            set { if (_isdetected != value) {_isdetected = value; OnPropertyChanged(nameof(IsDetected)); } }
+        }
+        
+        private bool _isautoOCR = false;
+        public bool IsAutoOCR
+        {
+            get => _isautoOCR;
+            set { if (_isautoOCR != value) { _isautoOCR = value; OnPropertyChanged(nameof(_isautoOCR)); } }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -61,19 +85,21 @@ namespace cztOCR
         /// <summary>保存当前单例到磁盘</summary>
         public void Save()
         {
-            var dto = new ConfigDto
+            var otd = new ConfigDto
             {
                 OcrApiKey = this.OcrApiKey,
                 OcrSecretKey = this.OcrSecretKey,
                 DsApiKey = this.DsApiKey,
                 OcrLanguage = this.OcrLanguage,
+                IsDetected = this.IsDetected,
+                IsAutoOCR = this.IsAutoOCR,
                 Prompt = this.Prompt
             };
-            string json = JsonConvert.SerializeObject(dto, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(otd, Formatting.Indented);
             File.WriteAllText(ConfigFile, json);
         }
 
-        /// <summary>从磁盘加载一个新的 ConfigData 实例</summary>
+        /// <summary>从磁盘加载一个新的ConfigData实例</summary>
         private static ConfigData LoadFromFile()
         {
             if (!File.Exists(ConfigFile))
@@ -91,6 +117,8 @@ namespace cztOCR
                         OcrSecretKey = dto.OcrSecretKey,
                         DsApiKey = dto.DsApiKey,
                         OcrLanguage = dto.OcrLanguage,
+                        IsDetected = dto.IsDetected,
+                        IsAutoOCR = dto.IsAutoOCR,
                         Prompt = dto.Prompt
                     };
                 }
@@ -102,7 +130,7 @@ namespace cztOCR
             return new ConfigData();
         }
 
-        /// <summary>内部 DTO，用于序列化/反序列化</summary>
+        /// <summary>内部 DTO，用于序列化or反序列化</summary>
         private class ConfigDto
         {
             public string OcrApiKey { get; set; }
@@ -110,6 +138,8 @@ namespace cztOCR
             public string DsApiKey { get; set; }
             public string OcrLanguage { get; set; }
             public string Prompt { get; set; }
+            public bool IsDetected { get; set; }
+            public bool IsAutoOCR { get; set; }
         }
     }
 }

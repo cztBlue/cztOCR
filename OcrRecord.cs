@@ -12,5 +12,6 @@ namespace cztOCR
         public string Label { get; set; }
         public string Text { get; set; }
         public long Time {  get; set; }
+        public string Prompt {  get; set; }
     }
 }

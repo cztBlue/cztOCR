@@ -12,7 +12,7 @@ namespace cztOCR
     {
         private DispatcherTimer clipboardTimer;
         private string lastPngHash = null;
-        byte[] currentimage = null;
+        public bool newimagecome = false;
 
         public ClipboardImageMonitor()
         {
@@ -22,6 +22,7 @@ namespace cztOCR
         }
 
         public void StartMonitor() { clipboardTimer.Start(); }
+
         public void StopMonitor() { clipboardTimer.Stop(); }
 
         public void TryLoadClip(object sender, EventArgs e)
@@ -43,6 +44,7 @@ namespace cztOCR
                         if (currentPngHash != lastPngHash)
                         {
                             CurrentImageStream.Instance.UpdateImage(imageBytes);
+                            newimagecome = true; 
                         }
                     }
                 }
@@ -52,6 +54,7 @@ namespace cztOCR
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+
         private string GetImageHash(byte[] imageBytes)
         {
             using (SHA256 sha256 = SHA256.Create())

@@ -25,8 +25,6 @@ namespace cztOCR
         {
             _stream = new MemoryStream();
             _bitmapImage = new BitmapImage();
-            //LoadFromDisk();
-            //AppDomain.CurrentDomain.ProcessExit += (s, e) => SaveToDisk(); // 注册进程退出事件
         }
 
         public BitmapImage CurrentImage
@@ -64,7 +62,7 @@ namespace cztOCR
 
         public byte[] GetImageBytes()
         {
-            lock (_stream) // 确保线程安全
+            lock (_stream) 
             {
                 if (_stream.Length == 0)
                     return Array.Empty<byte>();
@@ -76,7 +74,7 @@ namespace cztOCR
 
         public bool IsImageEmpty()
         {
-            lock (_lock) // 保持线程安全
+            lock (_lock) 
             {
                 return _stream.Length == 0; // 直接检查流长度
             }
